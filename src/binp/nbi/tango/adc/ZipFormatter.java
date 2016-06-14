@@ -55,4 +55,8 @@ public class ZipFormatter {
     String getFileName(){
         return file.getAbsolutePath();
     }
+
+    String getParent(){
+        return file.getParent();
+    }
 }
