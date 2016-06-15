@@ -1,5 +1,7 @@
 package binp.nbi.tango.adc;
 
+import binp.nbi.tango.util.Constants;
+
 public class Mark extends Tick {
 	public String markName = "";
 	public Double yValue = Constants.DEFAULT_MARK_Y;

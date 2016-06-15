@@ -1,5 +1,7 @@
 package binp.nbi.tango.adc;
 
+import binp.nbi.tango.util.Constants;
+
 public class Tick {
 	public String name = "";
 	public double start = 0.0;

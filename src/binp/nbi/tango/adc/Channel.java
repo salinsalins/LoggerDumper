@@ -1,5 +1,6 @@
 package binp.nbi.tango.adc;
 
+import binp.nbi.tango.util.Constants;
 import java.util.ArrayList;
 import java.util.List;
 

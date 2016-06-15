@@ -1,5 +1,6 @@
 package binp.nbi.tango.adc;
 
+import binp.nbi.tango.util.Constants;
 import fr.esrf.Tango.DevFailed;
 import fr.esrf.TangoApi.AttributeInfo;
 import fr.esrf.TangoApi.DeviceAttribute;
