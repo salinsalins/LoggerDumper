@@ -40,23 +40,37 @@ public class ZipFormatter {
     }
 
     void closeEntry() throws IOException {
+        formatter.flush();
         zipOutputStream.closeEntry();
     }
 
     void putNextEntry(ZipEntry e) throws IOException {
+        formatter.flush();
         zipOutputStream.putNextEntry(e);
     }
 
     void putNextEntry(String name) throws IOException {
         ZipEntry e = new ZipEntry(name);
-        zipOutputStream.putNextEntry(e);
+        putNextEntry(e);
     }
     
+    File getFile(){
+        return file;
+    }
+
     String getFileName(){
         return file.getAbsolutePath();
     }
 
+    String getName(){
+        return file.getName();
+    }
+
     String getParent(){
         return file.getParent();
+    }
+
+    File getParentFile(){
+        return file.getParentFile();
     }
 }
