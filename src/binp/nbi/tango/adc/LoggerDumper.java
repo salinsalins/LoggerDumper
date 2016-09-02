@@ -58,12 +58,12 @@ public class LoggerDumper {
 	}
 
 	public static Formatter openLogFile(String folder) throws IOException {
-		String logFileName = folder + "\\" + getLogFileName();
-		FileWriter fw = new FileWriter(logFileName, true);
-		Formatter logFile = new Formatter(fw);
-		String logTime = dateTimeStamp();
-		logFile.format("%s", logTime);
-		return logFile;
+            String logFileName = folder + "\\" + getLogFileName();
+            FileWriter fw = new FileWriter(logFileName, true);
+            Formatter logFile = new Formatter(fw);
+            String logTime = dateTimeStamp();
+            logFile.format("%s", logTime);
+            return logFile;
 	}
 
 	public static String dateTimeStamp() {
@@ -322,7 +322,7 @@ public class LoggerDumper {
 				zipFile.close();
 
 				fmt = Constants.LOG_DELIMETER + "File" +  Constants.PROP_VAL_DELIMETER + "%s";
-				String zipFileName = new File(zipFile.getFileName()).getName();
+				String zipFileName = zipFile.getName();
 				logFile.format(fmt, zipFileName);
 				//System.out.printf(fmt, fileName);
 				//System.out.println();
