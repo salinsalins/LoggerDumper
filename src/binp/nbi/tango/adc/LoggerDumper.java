@@ -328,7 +328,7 @@ public class LoggerDumper {
                 zipFile.close();
 
                 fmt = Constants.LOG_DELIMETER + "File" + Constants.PROP_VAL_DELIMETER + "%s";
-                String zipFileName = new File(zipFile.getFileName()).getName();
+                String zipFileName = zipFile.getName();
                 logFile.format(fmt, zipFileName);
                 //System.out.printf(fmt, fileName);
                 //System.out.println();
