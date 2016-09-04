@@ -286,10 +286,7 @@ public class LoggerDumper {
     public static void delay(int milliseconds) {
         try {
             Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            // e.printStackTrace();
-            System.out.println(e);
+        } catch (InterruptedException ex) {
         }
     }
 
