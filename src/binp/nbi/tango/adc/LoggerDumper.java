@@ -14,6 +14,7 @@ import java.util.zip.*;
 
 import fr.esrf.Tango.*;
 import fr.esrf.TangoApi.AttributeInfo;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LoggerDumper {
@@ -21,9 +22,6 @@ public class LoggerDumper {
 
     public static final String VERSION = "3.2";
 
-    // public String host = "192.168.160.53";
-    // public String host = "192.168.161.74";
-    // public String host = "127.0.0.1";
     public String host = "192.168.111.10";
     public String port = "10000";
     public String dev = "binp/nbi/adc0";
@@ -396,12 +394,10 @@ public class LoggerDumper {
             }
 
             nbiLogger.process();
-        } catch (DevFailed | FileNotFoundException | UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        }
+        catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Exception in LoggerDumper");
+            LOGGER.log(Level.INFO, "Exception info", ex);
         }
     }
 }
