@@ -26,11 +26,12 @@ public class LoggerDumper {
     static String progVersion = "41"; 
     public String iniFileName = progNameShort + ".ini";
 
+    public String outDir = "d:\\nbi\\current\\TangoAttrDump\\data\\";
+    int avgCount = 100;
+
     public String host = "192.168.111.10";
     public String port = "10000";
     public String dev = "binp/nbi/adc0";
-    int avgCount = 100;
-    public String outDir = "d:\\nbi\\current\\TangoAttrDump\\data\\";
 
     public String host2 = "192.168.111.11";
     public String port2 = "10000";
@@ -377,21 +378,27 @@ public class LoggerDumper {
     }
 
     private void readConfigFromIni() {
-        // Restore config from *.ini file
         try {
-            int i;
             boolean b;
             String s;
             Wini ini = new Wini(new File(iniFileName));
-            s = ini.get("Input", "file");
-            b =  ini.get("Input", "readFromFile", boolean.class);
-            i =  ini.get("ADAM_1", "address", int.class);
+            int n = ini.get("Common", "ADCCount", int.class);
+            if (n <= 0) return;
+            
+            for (int i = 0; i < n; i++) {
+                String section = "ADC_" + i;
+                s = ini.get(section, "host");
+                s = ini.get(section, "port");
+                s = ini.get(section, "device");
+            }
+            b = ini.get("Input", "readFromFile", boolean.class);
 
             // Restore log level
             s = ini.get("Log", "level");
+            LOGGER.setLevel(Level.parse(s));
             
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Configuration read error");
+            LOGGER.log(Level.SEVERE, "Configuration read error");
             LOGGER.log(Level.INFO, "Exception info", ex);
         }
         LOGGER.log(Level.FINE, "Configuration restored from {0}", iniFileName);
