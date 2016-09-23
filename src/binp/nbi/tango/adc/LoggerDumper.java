@@ -16,11 +16,15 @@ import fr.esrf.Tango.*;
 import fr.esrf.TangoApi.AttributeInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ini4j.Wini;
 
 public class LoggerDumper {
     static final Logger LOGGER = Logger.getLogger(LoggerDumper.class.getPackage().getName());
 
-    public static final String VERSION = "3.2";
+    static String progName = "Adlink DAQ-2204 Tango Loger";
+    static String progNameShort = "LoggerDumper";
+    static String progVersion = "41"; 
+    public String iniFileName = progNameShort + ".ini";
 
     public String host = "192.168.111.10";
     public String port = "10000";
@@ -354,7 +358,45 @@ public class LoggerDumper {
         lockFile.delete();
         //System.out.println("Unlocked");
     }
+    
+    void readInitialParameters(String[] args) {
+        int length = args.length;
+        if (length <= 0) {
+            readConfigFromIni();
+            return;
+        }
+        if (args[0].endsWith(".ini")) {
+            iniFileName = args[0];
+            readConfigFromIni();
+            return;
+        }
+        host = args[0];
+        if (args.length > 1) {
+            port = args[1];
+        }
+    }
 
+    private void readConfigFromIni() {
+        // Restore config from *.ini file
+        try {
+            int i;
+            boolean b;
+            String s;
+            Wini ini = new Wini(new File(iniFileName));
+            s = ini.get("Input", "file");
+            b =  ini.get("Input", "readFromFile", boolean.class);
+            i =  ini.get("ADAM_1", "address", int.class);
+
+            // Restore log level
+            s = ini.get("Log", "level");
+            
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Configuration read error");
+            LOGGER.log(Level.INFO, "Exception info", ex);
+        }
+        LOGGER.log(Level.FINE, "Configuration restored from {0}", iniFileName);
+    }
+    
     public static void main(String[] args) {
 
         LoggerDumper nbiLogger;
