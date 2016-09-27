@@ -37,7 +37,7 @@ public class LoggerDumper {
     public String port2 = "10000";
     public String dev2 = "binp/nbi/adc0";
     
-    List<ADC> list;
+    List<Device> deviceList;
 
     private File lockFile = new File("lock.lock");
     private FileOutputStream lockFileOS;
@@ -371,8 +371,8 @@ public class LoggerDumper {
     }
     
     void setDefaultParameters() throws DevFailed {
-        list = new LinkedList<>();
-        list.add(new ADC(host, port, dev));
+        deviceList = new LinkedList<>();
+        deviceList.add(new Device());
     }
 
     void readCommandLineParameters(String[] args) {
@@ -386,32 +386,58 @@ public class LoggerDumper {
             readConfigFromIni();
             return;
         }
-        host = args[0];
+
+        deviceList = new LinkedList();
+        Device adc = new Device();
+
+        adc.host = args[0];
         if (args.length > 1) {
-            port = args[1];
+            adc.port = args[1];
+        }
+        if (args.length > 2) {
+            adc.dev = args[2];
+        }
+        try {
+            if (args.length > 3) {
+                adc.avg = Integer.parseInt(args[3]);
+            }
+        }
+        catch (NumberFormatException ex) {
+        }
+
+        deviceList.add(adc);
+        
+        if (args.length > 4) {
+            outDir = args[4];
+        }
+        if (!outDir.endsWith("\\")) {
+            outDir = outDir + "\\";
         }
 }
 
     private void readConfigFromIni() {
         try {
-            boolean b;
-            String s;
             Wini ini = new Wini(new File(iniFileName));
-            int n = ini.get("Common", "ADCCount", int.class);
-            if (n <= 0) return;
-            
-            for (int i = 0; i < n; i++) {
-                String section = "ADC_" + i;
-                s = ini.get(section, "host");
-                s = ini.get(section, "port");
-                s = ini.get(section, "device");
-            }
-            b = ini.get("Input", "readFromFile", boolean.class);
-
             // Restore log level
-            s = ini.get("Log", "level");
+            String s = ini.get("Log", "level");
             LOGGER.setLevel(Level.parse(s));
-            
+            // Number of ADCs
+            int n = ini.get("Common", "ADCCount", int.class);
+            deviceList = new LinkedList();
+            if (n <= 0) return;
+            // Read ADCs
+            for (int i = 0; i < n; i++) {
+                Device adc = new Device();
+                String section = "ADC_" + i;
+                adc.host = ini.get(section, "host");
+                adc.port = ini.get(section, "port");
+                adc.dev = ini.get(section, "device");
+                adc.avg = ini.get(section, "avg", int.class);
+                deviceList.add(adc);
+                LOGGER.log(Level.FINE, "Added for processing " + adc.dev);
+            }
+            // Read outpet directory
+            outDir = ini.get("Common", "outDir");
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Configuration read error");
             LOGGER.log(Level.INFO, "Exception info", ex);
@@ -465,20 +491,22 @@ public class LoggerDumper {
         }
     }
 
-    class DumpedADC {
+    class Device {
         String host = "192.168.111.10";
         String port = "10000";
         String dev = "binp/nbi/adc0";
         String folder = "";
         int avg = 100;
 
-        public DumpedADC(String _host, String _port, String  _dev, String  _folder, int _avg) {
+        public Device() {
+        }
+
+        public Device(String _host, String _port, String  _dev, String  _folder, int _avg) {
             host = _host;
             port = _port;
             dev = _dev;
             folder = _folder;
             avg = _avg;
         }
-        
     } 
 }
