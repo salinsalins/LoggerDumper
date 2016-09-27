@@ -370,32 +370,27 @@ public class LoggerDumper {
         System.out.print(usageMessage);
     }
     
-    void setDefaultParameters() {
+    void setDefaultParameters() throws DevFailed {
         list = new LinkedList<>();
-        try {
-            list.add(new ADC(host, port, dev));
-        } catch (DevFailed ex) {
-            LOGGER.log(Level.SEVERE, "Default ADC did not found.");
-            LOGGER.log(Level.INFO, "Exception ", ex);
-        }
+        list.add(new ADC(host, port, dev));
     }
 
-        void readInitialParameters(String[] args) {
-        int length = args.length;
-        if (length <= 0) {
-            readConfigFromIni();
-            return;
-        }
-        if (args[0].endsWith(".ini")) {
-            iniFileName = args[0];
-            readConfigFromIni();
-            return;
-        }
-        host = args[0];
-        if (args.length > 1) {
-            port = args[1];
-        }
+    void readCommandLineParameters(String[] args) {
+    int length = args.length;
+    if (length <= 0) {
+        readConfigFromIni();
+        return;
     }
+    if (args[0].endsWith(".ini")) {
+        iniFileName = args[0];
+        readConfigFromIni();
+        return;
+    }
+    host = args[0];
+    if (args.length > 1) {
+        port = args[1];
+    }
+}
 
     private void readConfigFromIni() {
         try {
@@ -469,4 +464,21 @@ public class LoggerDumper {
             LOGGER.log(Level.INFO, "Exception info", ex);
         }
     }
+
+    class DumpedADC {
+        String host = "192.168.111.10";
+        String port = "10000";
+        String dev = "binp/nbi/adc0";
+        String folder = "";
+        int avg = 100;
+
+        public DumpedADC(String _host, String _port, String  _dev, String  _folder, int _avg) {
+            host = _host;
+            port = _port;
+            dev = _dev;
+            folder = _folder;
+            avg = _avg;
+        }
+        
+    } 
 }
