@@ -36,6 +36,8 @@ public class LoggerDumper {
     public String host2 = "192.168.111.11";
     public String port2 = "10000";
     public String dev2 = "binp/nbi/adc0";
+    
+    List<ADC> list;
 
     public String makeFolder() {
         String folder = outDir + getLogFolderName();
@@ -360,7 +362,25 @@ public class LoggerDumper {
         //System.out.println("Unlocked");
     }
     
-    void readInitialParameters(String[] args) {
+    void printUsageMessage() {
+        String usageMessage = "Usage: \n"
+                + "LoggerDumper ini_file.ini or\n"
+                + "LoggerDumper host port device avgcount\n"
+                + "Default:  192.168.111.10 10000 binp/nbi/adc0 100";
+        System.out.print(usageMessage);
+    }
+    
+    void setDefaultParameters() {
+        list = new LinkedList<>();
+        try {
+            list.add(new ADC(host, port, dev));
+        } catch (DevFailed ex) {
+            LOGGER.log(Level.SEVERE, "Default ADC did not found.");
+            LOGGER.log(Level.INFO, "Exception ", ex);
+        }
+    }
+
+        void readInitialParameters(String[] args) {
         int length = args.length;
         if (length <= 0) {
             readConfigFromIni();
