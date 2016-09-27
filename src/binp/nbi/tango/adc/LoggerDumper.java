@@ -23,7 +23,7 @@ public class LoggerDumper {
 
     static String progName = "Adlink DAQ-2204 Tango Loger";
     static String progNameShort = "LoggerDumper";
-    static String progVersion = "41"; 
+    static String progVersion = "4.1"; 
     public String iniFileName = progNameShort + ".ini";
 
     public String outDir = "d:\\nbi\\current\\TangoAttrDump\\data\\";
@@ -38,6 +38,9 @@ public class LoggerDumper {
     public String dev2 = "binp/nbi/adc0";
     
     List<ADC> list;
+
+    private File lockFile = new File("lock.lock");
+    private FileOutputStream lockFileOS;
 
     public String makeFolder() {
         String folder = outDir + getLogFolderName();
@@ -345,9 +348,6 @@ public class LoggerDumper {
         } // while
     }
 
-    private File lockFile = new File("lock.lock");
-    private FileOutputStream lockFileOS;
-
     private void lockDir(String folder) throws FileNotFoundException {
         //WatchService watcher = null;
         //lockFile.toPath().register(watcher, ENTRY_CREATE);
@@ -376,20 +376,20 @@ public class LoggerDumper {
     }
 
     void readCommandLineParameters(String[] args) {
-    int length = args.length;
-    if (length <= 0) {
-        readConfigFromIni();
-        return;
-    }
-    if (args[0].endsWith(".ini")) {
-        iniFileName = args[0];
-        readConfigFromIni();
-        return;
-    }
-    host = args[0];
-    if (args.length > 1) {
-        port = args[1];
-    }
+        int length = args.length;
+        if (length <= 0) {
+            readConfigFromIni();
+            return;
+        }
+        if (args[0].endsWith(".ini")) {
+            iniFileName = args[0];
+            readConfigFromIni();
+            return;
+        }
+        host = args[0];
+        if (args.length > 1) {
+            port = args[1];
+        }
 }
 
     private void readConfigFromIni() {
