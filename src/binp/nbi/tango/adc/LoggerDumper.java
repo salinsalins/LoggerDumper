@@ -417,22 +417,35 @@ public class LoggerDumper {
 
     private void readConfigFromIni() {
         try {
+            String s;
+            int i;
             Wini ini = new Wini(new File(iniFileName));
             // Restore log level
-            String s = ini.get("Log", "level");
-            LOGGER.setLevel(Level.parse(s));
+            s = ini.get("Log", "level");
+            if (s != null) LOGGER.setLevel(Level.parse(s));
             // Number of ADCs
-            int n = ini.get("Common", "ADCCount", int.class);
+            int n = 0;
+            try {
+                n = ini.get("Common", "ADCCount", int.class);
+            } catch (Exception ex) {
+            }
             deviceList = new LinkedList();
             if (n <= 0) return;
             // Read ADCs
-            for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
                 Device adc = new Device();
-                String section = "ADC_" + i;
-                adc.host = ini.get(section, "host");
-                adc.port = ini.get(section, "port");
-                adc.dev = ini.get(section, "device");
-                adc.avg = ini.get(section, "avg", int.class);
+                String section = "ADC_" + j;
+                s = ini.get(section, "host");
+                if (s != null) adc.host = s;
+                s = ini.get(section, "port");
+                if (s != null) adc.port = s;
+                s = ini.get(section, "device");
+                if (s != null) adc.dev = s;
+                try {
+                    i = ini.get(section, "avg", int.class);
+                    adc.avg = i;
+                } catch (Exception ex) {
+                }
                 deviceList.add(adc);
                 LOGGER.log(Level.FINE, "Added for processing " + adc.dev);
             }
