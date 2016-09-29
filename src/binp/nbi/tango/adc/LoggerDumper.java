@@ -299,19 +299,29 @@ public class LoggerDumper {
     }
 
     public void process() throws DevFailed, IOException {
-        ADC adc = new ADC(dev, host, port);
-
+        ADC adc0 = null;
+        for (Device d:deviceList) {
+            try {
+                adc0 = new ADC(d.dev, d.host, d.port);
+                break;
+            } catch (DevFailed ex) {
+            }
+        }
+        if (adc0 == null){
+            System.out.printf("\nNo ADC found. Exit.");
+            return;
+        }
+            
         long shotOld = -8888;
         //shotOld = adc.readShot();
         long shotNew = 0;
 
         while (true) {
-            shotNew = adc.readShot();
+            shotNew = adc0.readShot();
             if (shotNew != shotOld) {
                 shotOld = shotNew;
 
                 String folder = makeFolder();
-
                 System.out.printf("\n%s New Shot %d\n", timeStamp(), shotNew);
                 lockDir(folder);
                 Formatter logFile = openLogFile(folder);
@@ -319,14 +329,15 @@ public class LoggerDumper {
                 logFile.format(fmt, shotNew);
 
                 ZipFormatter zipFile = openZipFile(folder);
-
-                System.out.println("Saving from " + adc.fullName());
-                dumpAdcDataAndLog(adc, zipFile, logFile, "mc/");
-
-                if (!"".equals(host2) && !"".equals(port2) && !"".equals(dev2)) {
-                    ADC adc2 = new ADC(dev2, host2, port2);
-                    System.out.println("Saving from " + adc2.fullName());
-                    dumpAdcDataAndLog(adc2, zipFile, logFile, "rf/");
+                
+                for (Device d:deviceList) {
+                    try {
+                        ADC adc = new ADC(d.dev, d.host, d.port);
+                        System.out.println("Saving from " + adc.fullName());
+                        dumpAdcDataAndLog(adc, zipFile, logFile, d.folder);
+                    } catch (DevFailed devFailed) {
+                    } catch (IOException iOException) {
+                    }
                 }
 
                 zipFile.flush();
@@ -441,16 +452,24 @@ public class LoggerDumper {
                 if (s != null) adc.port = s;
                 s = ini.get(section, "device");
                 if (s != null) adc.dev = s;
-                try {
-                    i = ini.get(section, "avg", int.class);
-                    adc.avg = i;
-                } catch (Exception ex) {
-                }
+                s = ini.get(section, "folder");
+                if (s != null) 
+                    adc.folder = s;
+                else
+                    adc.folder = section;
+                s = ini.get(section, "avg");
+                if (s != null) 
+                    try {
+                        i = ini.get(section, "avg", int.class);
+                        adc.avg = i;
+                    } catch (Exception ex) {
+                    }
                 deviceList.add(adc);
                 LOGGER.log(Level.FINE, "Added for processing " + adc.dev);
             }
-            // Read outpet directory
-            outDir = ini.get("Common", "outDir");
+            // Read output directory
+            s = ini.get("Common", "outDir");
+            if (s != null) outDir = s;
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Configuration read error");
             LOGGER.log(Level.INFO, "Exception info", ex);
