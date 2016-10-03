@@ -10,14 +10,14 @@ import fr.esrf.TangoApi.DbAttribute;
 import fr.esrf.TangoApi.DeviceAttribute;
 
 public class Channel {
-	public ADC adc = null;
+	public AdlinkADC adc = null;
 	public DeviceAttribute devAttr = null;
 	public DbAttribute dbAttr = null;
 	public double[] data = null;
 	public long shot = -2;
 	public long time = -1;
 
-	public Channel(ADC theadc, String channelName) throws DevFailed {
+	public Channel(AdlinkADC theadc, String channelName) throws DevFailed {
 		adc = theadc;
 		devAttr = theadc.devProxy.read_attribute(channelName);
 		dbAttr = theadc.devProxy.get_attribute_property(channelName);

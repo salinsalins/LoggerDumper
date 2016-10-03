@@ -6,17 +6,17 @@ import fr.esrf.TangoApi.AttributeInfo;
 import fr.esrf.TangoApi.DeviceAttribute;
 import fr.esrf.TangoApi.DeviceProxy;
 
-public class ADC {
+public class AdlinkADC {
 	public String host = Constants.DEFAULT_HOST;
 	public String port = Constants.DEFAULT_PORT;
 	public String dev = Constants.DEFAULT_DEV;
 	public DeviceProxy devProxy = null;
 
-	public ADC() throws DevFailed {
+	public AdlinkADC() throws DevFailed {
 		devProxy = new DeviceProxy(dev, host, port);
 	}
 
-	public ADC(String adev, String ahost, String aport) throws DevFailed {
+	public AdlinkADC(String adev, String ahost, String aport) throws DevFailed {
 		dev = adev;
 		host = ahost;
 		port = aport;
@@ -62,19 +62,19 @@ public class ADC {
 	public String[] getChannelNames() throws DevFailed {
 		AttributeInfo[] attrInfo = devProxy.get_attribute_info();
 		int n = 0;
-		for (int i = 0; i < attrInfo.length; i++) {
-			if (attrInfo[i].name.startsWith(Constants.CHAN)) {
-				n++;
-			}
-		}
+                for (AttributeInfo attrInfo1 : attrInfo) {
+                    if (attrInfo1.name.startsWith(Constants.CHAN)) {
+                        n++;
+                    }
+                }
 		String[] channelNames = new String[n];
 		n = 0;
-		for (int i = 0; i < attrInfo.length; i++) {
-			if (attrInfo[i].name.startsWith(Constants.CHAN)) {
-				channelNames[n] = attrInfo[i].name;
-				n++;
-			}
-		}
+                for (AttributeInfo attrInfo1 : attrInfo) {
+                    if (attrInfo1.name.startsWith(Constants.CHAN)) {
+                        channelNames[n] = attrInfo1.name;
+                        n++;
+                    }
+                }
 		return channelNames;
 	}
 
@@ -84,15 +84,15 @@ public class ADC {
 		String xChannel = Constants.CHAN + "x";
 		int n = 0;
 		for (int i = 0; i < attrInfo.length; i++) {
-			if (attrInfo[i].name.startsWith(yChannel)) {
-				String xName = attrInfo[i].name.replace(yChannel, xChannel);
-				for (int j = 0; j < attrInfo.length; j++) {
-					if (attrInfo[j].name == xName) {
-						n++;
-						break;
-					}
-				}
-			}
+                    if (attrInfo[i].name.startsWith(yChannel)) {
+                        String xName = attrInfo[i].name.replace(yChannel, xChannel);
+                        for (int j = 0; j < attrInfo.length; j++) {
+                            if (attrInfo[j].name.equals(xName)) {
+                                n++;
+                                break;
+                            }
+                        }
+                    }
 		}
 		String[] signalNames = new String[n];
 		n = 0;
@@ -100,7 +100,7 @@ public class ADC {
 			if (attrInfo[i].name.startsWith(yChannel)) {
 				String xName = attrInfo[i].name.replace(yChannel, Constants.CHAN);
 				for (int j = 0; j < attrInfo.length; j++) {
-					if (attrInfo[j].name == xName) {
+					if (attrInfo[j].name.equals(xName)) {
 						signalNames[n] = attrInfo[i].name;
 						n++;
 						break;
@@ -120,7 +120,7 @@ public class ADC {
 			if (attrInfo[i].name.startsWith(yChannel)) {
 				String xName = attrInfo[i].name.replace(yChannel, xChannel);
 				for (int j = 0; j < attrInfo.length; j++) {
-					if (attrInfo[j].name == xName) {
+					if (attrInfo[j].name.equals(xName)) {
 						n++;
 						break;
 					}
@@ -133,7 +133,7 @@ public class ADC {
 			if (attrInfo[i].name.startsWith(yChannel)) {
 				String xName = attrInfo[i].name.replace(yChannel, xChannel);
 				for (int j = 0; j < attrInfo.length; j++) {
-					if (attrInfo[j].name == xName) {
+					if (attrInfo[j].name.equals(xName)) {
 						signals[n] = attrInfo[i];
 						n++;
 						break;

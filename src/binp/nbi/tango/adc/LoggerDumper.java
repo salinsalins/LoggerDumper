@@ -248,7 +248,7 @@ public class LoggerDumper {
         }
     }
 
-    public void dumpAdcDataAndLog(ADC adc, ZipFormatter zipFile, Formatter logFile, String folder)
+    public void dumpAdcDataAndLog(AdlinkADC adc, ZipFormatter zipFile, Formatter logFile, String folder)
             throws IOException, DevFailed {
         AttributeInfo[] channels = adc.getChannels();
         int retryCount = 0;
@@ -287,7 +287,7 @@ public class LoggerDumper {
         } // for
     }
 
-    public void dumpAdcDataAndLog(ADC adc, ZipFormatter zipFile, Formatter logFile) throws IOException, DevFailed {
+    public void dumpAdcDataAndLog(AdlinkADC adc, ZipFormatter zipFile, Formatter logFile) throws IOException, DevFailed {
         dumpAdcDataAndLog(adc, zipFile, logFile, "");
     }
 
@@ -299,19 +299,25 @@ public class LoggerDumper {
     }
 
     public void process() throws DevFailed, IOException {
-        ADC adc0 = null;
+        // Fill AdlinkADC in deviceList
+        AdlinkADC adc0 = null;
         for (Device d:deviceList) {
             try {
-                adc0 = new ADC(d.dev, d.host, d.port);
-                break;
+                AdlinkADC adc = new AdlinkADC(d.dev, d.host, d.port);
+                d.timeout = System.currentTimeMillis();
+                d.active = true;
+                d.adc = adc;
+                if (adc0 == null) adc0 = adc;
             } catch (DevFailed ex) {
+                d.active = false;
+                d.timeout = System.currentTimeMillis() + 10000;
             }
         }
         if (adc0 == null){
             System.out.printf("\nNo ADC found. Exit.");
             return;
         }
-            
+        
         long shotOld = -8888;
         //shotOld = adc.readShot();
         long shotNew = 0;
@@ -332,11 +338,20 @@ public class LoggerDumper {
                 
                 for (Device d:deviceList) {
                     try {
-                        ADC adc = new ADC(d.dev, d.host, d.port);
-                        System.out.println("Saving from " + adc.fullName());
-                        dumpAdcDataAndLog(adc, zipFile, logFile, d.folder);
+                        if (!d.active) {
+                            if (d.timeout > System.currentTimeMillis())
+                                continue;
+                            AdlinkADC adc = new AdlinkADC(d.dev, d.host, d.port);
+                            d.timeout = System.currentTimeMillis();
+                            d.active = true;
+                            d.adc = adc;
+                        }
+                        System.out.println("Saving from " + d.adc.fullName());
+                        dumpAdcDataAndLog(d.adc, zipFile, logFile, d.folder);
+                        zipFile.flush();
                     } catch (DevFailed devFailed) {
-                    } catch (IOException iOException) {
+                        d.active = false;
+                        d.timeout = System.currentTimeMillis() + 10000;
                     }
                 }
 
@@ -529,6 +544,9 @@ public class LoggerDumper {
         String dev = "binp/nbi/adc0";
         String folder = "";
         int avg = 100;
+        AdlinkADC adc;
+        boolean active = false;
+        long timeout = 0;
 
         public Device() {
         }
@@ -539,6 +557,8 @@ public class LoggerDumper {
             dev = _dev;
             folder = _folder;
             avg = _avg;
+            active = false;
+            timeout = System.currentTimeMillis();
         }
     } 
 }
