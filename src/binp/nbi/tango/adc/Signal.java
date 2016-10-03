@@ -16,7 +16,7 @@ public class Signal {
 	public Channel x = null;
 	public Channel y = null;
 
-	public Signal(ADC adc, String channelName) throws DevFailed {
+	public Signal(AdlinkADC adc, String channelName) throws DevFailed {
 		String yChannelName = "";
 		if (channelName.startsWith("chany"))
 			yChannelName = channelName;
@@ -43,7 +43,7 @@ public class Signal {
 		name = yChannelName.replace("chany", "chan");
 	}
 
-	public Signal(ADC adc, int channelNumber) throws DevFailed {
+	public Signal(AdlinkADC adc, int channelNumber) throws DevFailed {
 		this(adc, "chany" + channelNumber);
 	}
 

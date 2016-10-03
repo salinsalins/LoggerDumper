@@ -6,17 +6,17 @@ import fr.esrf.TangoApi.AttributeInfo;
 import fr.esrf.TangoApi.DeviceAttribute;
 import fr.esrf.TangoApi.DeviceProxy;
 
-public class ADC {
+public class AdlinkADC {
 	public String host = Constants.DEFAULT_HOST;
 	public String port = Constants.DEFAULT_PORT;
 	public String dev = Constants.DEFAULT_DEV;
 	public DeviceProxy devProxy = null;
 
-	public ADC() throws DevFailed {
+	public AdlinkADC() throws DevFailed {
 		devProxy = new DeviceProxy(dev, host, port);
 	}
 
-	public ADC(String adev, String ahost, String aport) throws DevFailed {
+	public AdlinkADC(String adev, String ahost, String aport) throws DevFailed {
 		dev = adev;
 		host = ahost;
 		port = aport;
