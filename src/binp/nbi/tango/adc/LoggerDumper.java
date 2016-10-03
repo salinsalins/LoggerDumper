@@ -299,25 +299,32 @@ public class LoggerDumper {
     }
 
     public void process() throws DevFailed, IOException {
-        ADC adc0 = null;
+        // Create ADC list from deviceList
+        ADC adc = null;
+        List<ADC> ADCList = new LinkedList<>();
         for (Device d:deviceList) {
             try {
-                adc0 = new ADC(d.dev, d.host, d.port);
-                break;
+                adc = new ADC(d.dev, d.host, d.port);
+                d.timeout = System.currentTimeMillis();
+                d.active = true;
             } catch (DevFailed ex) {
+                d.active = false;
+                d.timeout = System.currentTimeMillis() + 10000;
             }
+            ADCList.add(adc);
         }
-        if (adc0 == null){
+        if (ADCList.isEmpty()){
             System.out.printf("\nNo ADC found. Exit.");
             return;
         }
-            
+        adc = ADCList.get(0);
+        
         long shotOld = -8888;
         //shotOld = adc.readShot();
         long shotNew = 0;
 
         while (true) {
-            shotNew = adc0.readShot();
+            shotNew = adc.readShot();
             if (shotNew != shotOld) {
                 shotOld = shotNew;
 
@@ -529,6 +536,8 @@ public class LoggerDumper {
         String dev = "binp/nbi/adc0";
         String folder = "";
         int avg = 100;
+        boolean active = false;
+        long timeout = 0;
 
         public Device() {
         }
@@ -539,6 +548,8 @@ public class LoggerDumper {
             dev = _dev;
             folder = _folder;
             avg = _avg;
+            active = false;
+            timeout = System.currentTimeMillis();
         }
     } 
 }
