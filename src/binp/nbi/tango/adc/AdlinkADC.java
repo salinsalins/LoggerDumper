@@ -37,7 +37,6 @@ public class AdlinkADC {
 			DeviceAttribute da = devProxy.read_attribute(Constants.SHOT_ID);
 			newShot = da.extractLong();
 		} catch (DevFailed e) {
-			newShot = -2;
 		}
 		return newShot;
 	}

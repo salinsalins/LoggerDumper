@@ -174,9 +174,9 @@ public class LoggerDumper {
         zipFile.format("Shot%s%d\r\n", Constants.PROP_VAL_DELIMETER, sig.shot());
         String[] propList = sig.getPropValList();
         if (propList.length > 0) {
-            for (int j = 0; j < propList.length; j++) {
-                // System.out.printf("%s\r\n", propList[j]);
-                zipFile.format("%s\r\n", propList[j]);
+            for (String propList1 : propList) {
+                // System.out.printf("%s\r\n", propList1);
+                zipFile.format("%s\r\n", propList1);
             }
         }
         zipFile.flush();
