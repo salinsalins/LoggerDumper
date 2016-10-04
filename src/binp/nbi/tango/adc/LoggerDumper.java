@@ -271,8 +271,8 @@ public class LoggerDumper {
                     } // if save_auto || save_log is on
                     retryCount = 0;
                 } // try
-                catch (Exception e) {
-                    //System.out.println("Channel saving exception : " + e );
+                catch (Exception ex) {
+                    //System.out.println("Channel saving exception : " + ex );
                     //e.printStackTrace();
                     logFile.flush();
                     zipFile.flush();
@@ -280,8 +280,11 @@ public class LoggerDumper {
                     retryCount++;
                 } // catch
                 if (retryCount > 0 && retryCount < 3) {
-                    System.out.println("Retry reading channel");
+                    System.out.println("Retry reading channel " + channels[i].name);
                     i--;
+                }
+                if (retryCount >= 3) {
+                    System.out.println("Error reading channel " + channels[i].name);
                 }
             } // if
         } // for
