@@ -8,6 +8,7 @@ import fr.esrf.Tango.DevFailed;
 import fr.esrf.TangoApi.AttributeInfo;
 import fr.esrf.TangoApi.DbAttribute;
 import fr.esrf.TangoApi.DeviceAttribute;
+import java.util.LinkedList;
 
 public class Channel {
 	public AdlinkADC adc = null;
@@ -123,18 +124,18 @@ public class Channel {
 	}
 
 	public List<Tick> getTickList() throws DevFailed {
-		ArrayList<Tick> tickList = new ArrayList<Tick>();
+		List<Tick> tickList = new LinkedList<>();
 		String[] propNames = dbAttr.get_property_list();
 		if (propNames != null && propNames.length > 0) {
-			for (int i = 0; i < propNames.length; i++) {
-				if (propNames[i].endsWith(Constants.START_SUFFIX)) {
-					Tick tick = new Tick(this, propNames[i].replace(Constants.START_SUFFIX, ""));
-					//System.out.println(tick);
-					if (tick.length > 0.0 && tick.name != "") {
-						tickList.add(tick);
-					}
-				}
-			}
+                    for (String propName : propNames) {
+                        if (propName.endsWith(Constants.START_SUFFIX)) {
+                            Tick tick = new Tick(this, propName.replace(Constants.START_SUFFIX, ""));
+                            //System.out.println(tick);
+                            if (tick.length > 0.0 && !"".equals(tick.name)) {
+                                tickList.add(tick);
+                            }
+                        }
+                    }
 		}
 		return tickList;
 	}
