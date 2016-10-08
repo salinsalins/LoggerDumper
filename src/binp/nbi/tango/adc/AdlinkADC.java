@@ -13,36 +13,36 @@ public class AdlinkADC {
     public DeviceProxy devProxy = null;
 
     public AdlinkADC() throws DevFailed {
-            devProxy = new DeviceProxy(dev, host, port);
+        devProxy = new DeviceProxy(dev, host, port);
     }
 
     public AdlinkADC(String adev, String ahost, String aport) throws DevFailed {
-            dev = adev;
-            host = ahost;
-            port = aport;
-            devProxy = new DeviceProxy(dev, host, port);
+        dev = adev;
+        host = ahost;
+        port = aport;
+        devProxy = new DeviceProxy(dev, host, port);
     }
 
     public String fullName() {
-            return devProxy.fullName();
+        return devProxy.fullName();
     }
 
     public String name() {
-            return devProxy.name();
+        return devProxy.name();
     }
 
     long readShot() {
-            long newShot = -2;
-            try {
-                    DeviceAttribute da = devProxy.read_attribute(Constants.SHOT_ID);
-                    newShot = da.extractLong();
-            } catch (DevFailed e) {
-            }
-            return newShot;
+        long newShot = -2;
+        try {
+            DeviceAttribute da = devProxy.read_attribute(Constants.SHOT_ID);
+            newShot = da.extractLong();
+        } catch (DevFailed e) {
+        }
+        return newShot;
     }
 
     public String[] getPropList() throws DevFailed {
-            return devProxy.get_property_list("*");
+        return devProxy.get_property_list("*");
     }
 
     public String[] getPropList(String wildcards) throws DevFailed {
