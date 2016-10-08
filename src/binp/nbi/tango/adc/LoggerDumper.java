@@ -553,7 +553,7 @@ public class LoggerDumper {
         public Device() {
         }
 
-        public Device(String _host, String _port, String  _dev, String  _folder, int _avg) {
+        public Device(String _host, String _port, String _dev, String _folder, int _avg) {
             host = _host;
             port = _port;
             dev = _dev;
