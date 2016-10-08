@@ -25,7 +25,7 @@ public class Tick {
         if (!(tickName == null || "".equals(tickName))) {
             start = chan.getPropDouble(tickName + Constants.START_SUFFIX);
             length = chan.getPropDouble(tickName + Constants.LENGTH_SUFFIX);
-            name = chan.getPropString(tickName + Constants.NAME_SUFFIX);
+            name = chan.getPropertyAsString(tickName + Constants.NAME_SUFFIX);
             if (name == null || "".equals(name)) name = tickName;
         }
     }

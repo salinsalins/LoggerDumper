@@ -129,7 +129,7 @@ public class Signal {
 	}
 
 	public String getPropString(String propName) {
-		return y.getPropString(propName);
+		return y.getPropertyAsString(propName);
 	}
 
 	public String[] getPropValList() throws DevFailed {
