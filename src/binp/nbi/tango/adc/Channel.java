@@ -61,20 +61,14 @@ public class Channel {
 		return data;
 	}
 
-	public String getPropString(String propName) {
-		String propVal = "";
-		try {
-			propVal = dbAttr.get_string_value(propName);
-		} catch (Exception e) {
-			propVal = "";
-		}
-		return propVal;
+	public String getPropertyAsString(String propertyName) {
+            return dbAttr.get_string_value(propertyName);
 	}
 
 	public Double getPropDouble(String propName) {
 		Double propVal = 0.0;
 		try {
-			propVal = Double.parseDouble(getPropString(propName));
+			propVal = Double.parseDouble(getPropertyAsString(propName));
 		} catch (Exception e) {
 			propVal = 0.0;
 		}
@@ -82,32 +76,28 @@ public class Channel {
 	}
 
 	public Boolean getPropBoolean(String propName) {
-		Boolean propVal = false;
-		try {
-			String propString = getPropString(propName);
-			if (propString.toLowerCase().equals("true"))
-				propVal = true;
-			else if (propString.toLowerCase().equals("on"))
-				propVal = true;
-		} catch (Exception e) {
-			propVal = false;
-		}
-		return propVal;
+            Boolean propVal = false;
+            String propString = getPropertyAsString(propName);
+            if (propString.equalsIgnoreCase("true"))
+                propVal = true;
+            else if (propString.equalsIgnoreCase("on"))
+                propVal = true;
+            return propVal;
 	}
 
 	public Integer getPropInteger(String propName) {
 		Integer propVal = 0;
 		try {
-			propVal = new Integer(getPropString(propName));
+			propVal = new Integer(getPropertyAsString(propName));
 		} catch (Exception e) {
 			propVal = 0;
 		}
 		return propVal;
 	}
 
-	public String[] getPropList() throws DevFailed {
-		String[] propList = dbAttr.get_property_list();
-		return propList;
+	public String[] getPropList() {
+            String[] propList = dbAttr.get_property_list();
+            return propList;
 	}
 
 	public String[] getPropValList() throws DevFailed {
