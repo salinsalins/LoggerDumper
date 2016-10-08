@@ -117,19 +117,19 @@ public class Signal {
 	}
 
 	public Integer getPropInteger(String propName) {
-		return y.getPropInteger(propName);
+		return y.getPropertyAsInteger(propName);
 	}
 
 	public Double getPropDouble(String propName) {
-		return y.getPropDouble(propName);
+		return y.getPropertyAsDouble(propName);
 	}
 
 	public Boolean getPropBoolean(String propName) {
-		return y.getPropBoolean(propName);
+		return y.getPropertyAsBoolean(propName);
 	}
 
 	public String getPropString(String propName) {
-		return y.getPropertyAsString(propName);
+		return y.getProperty(propName);
 	}
 
 	public String[] getPropValList() throws DevFailed {

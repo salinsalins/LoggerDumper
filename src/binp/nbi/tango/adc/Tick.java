@@ -23,34 +23,34 @@ public class Tick {
     public Tick(Channel chan, String tickName) {
         this();
         if (!(tickName == null || "".equals(tickName))) {
-            start = chan.getPropDouble(tickName + Constants.START_SUFFIX);
-            length = chan.getPropDouble(tickName + Constants.LENGTH_SUFFIX);
-            name = chan.getPropertyAsString(tickName + Constants.NAME_SUFFIX);
+            start = chan.getPropertyAsDouble(tickName + Constants.START_SUFFIX);
+            length = chan.getPropertyAsDouble(tickName + Constants.LENGTH_SUFFIX);
+            name = chan.getProperty(tickName + Constants.NAME_SUFFIX);
             if (name == null || "".equals(name)) name = tickName;
         }
     }
 
     public Tick(Signal sig, String tickName) {
-            this(sig.y, tickName);
+        this(sig.y, tickName);
     }
 
     @Override
     public boolean equals(Object tick) {
-            if (!(tick instanceof Tick)) return false;
-            return ((Tick)tick).name.equals(name);
+        if (!(tick instanceof Tick)) return false;
+        return ((Tick)tick).name.equals(name);
     }
 
     @Override
     public int hashCode() {
-            return name.hashCode();
+        return name.hashCode();
     }
 
     @Override
     public String toString() {
-            return String.format("Tick: %s : %g : %g", name, start, length);
+        return String.format("Tick: %s : %g : %g", name, start, length);
     }
 
     public String name() {
-            return name;
+        return name;
     }
 }

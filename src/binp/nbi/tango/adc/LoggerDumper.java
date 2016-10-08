@@ -256,8 +256,8 @@ public class LoggerDumper {
             if (channels[i].name.startsWith(Constants.CHAN + "y")) {
                 try {
                     Channel chan = new Channel(adc, channels[i].name);
-                    Boolean saveDataFlag = chan.getPropBoolean(Constants.SAVE_DATA);
-                    Boolean saveLogFlag = chan.getPropBoolean(Constants.SAVE_LOG);
+                    Boolean saveDataFlag = chan.getPropertyAsBoolean(Constants.SAVE_DATA);
+                    Boolean saveLogFlag = chan.getPropertyAsBoolean(Constants.SAVE_LOG);
                     if (saveDataFlag || saveLogFlag) {
                         Signal sig = new Signal(chan);
                         sig.readData();
