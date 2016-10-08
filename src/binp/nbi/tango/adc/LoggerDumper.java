@@ -21,7 +21,7 @@ import org.ini4j.Wini;
 public class LoggerDumper {
     static final Logger LOGGER = Logger.getLogger(LoggerDumper.class.getPackage().getName());
 
-    static String progName = "Adlink DAQ-2204 Tango Loger";
+    static String progName = "Adlink DAQ-2204 Tango Logger";
     static String progNameShort = "LoggerDumper";
     static String progVersion = "4.1"; 
     public String iniFileName = progNameShort + ".ini";
@@ -528,7 +528,6 @@ public class LoggerDumper {
             if (args.length > 7) {
                 nbiLogger.dev2 = args[7];
             }
-
             if (args.length > 0 && args.length < 6) {
                 nbiLogger.host2 = "";
             }
