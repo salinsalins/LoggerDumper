@@ -14,6 +14,9 @@ import java.util.zip.*;
 
 import fr.esrf.Tango.*;
 import fr.esrf.TangoApi.AttributeInfo;
+import fr.esrf.TangoApi.AttributeProxy;
+import fr.esrf.TangoApi.DbAttribute;
+import fr.esrf.TangoApi.DeviceProxy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ini4j.Wini;
@@ -38,6 +41,7 @@ public class LoggerDumper {
     public String dev2 = "binp/nbi/adc0";
     
     List<Device> deviceList;
+    List<Property> propList;
 
     private File lockFile = new File("lock.lock");
     private FileOutputStream lockFileOS;
@@ -244,7 +248,7 @@ public class LoggerDumper {
         }
     }
 
-    public void dumpAdcDataAndLog(AdlinkADC adc, ZipFormatter zipFile, Formatter logFile, String folder)
+    public void dumpADCDataAndLog(AdlinkADC adc, ZipFormatter zipFile, Formatter logFile, String folder)
             throws IOException, DevFailed {
         AttributeInfo[] channels = adc.getChannels();
         int retryCount = 0;
@@ -309,7 +313,7 @@ public class LoggerDumper {
             }
         }
         if (adc0 == null){
-            System.out.printf("\nNo ADC found. Exit.");
+            System.out.printf("\nNo Adlink ADC found. Exit.");
             printUsageMessage();
             return;
         }
@@ -343,7 +347,7 @@ public class LoggerDumper {
                             d.adc = adc;
                         }
                         System.out.println("Saving from " + d.adc.fullName());
-                        dumpAdcDataAndLog(d.adc, zipFile, logFile, d.folder);
+                        dumpADCDataAndLog(d.adc, zipFile, logFile, d.folder);
                         zipFile.flush();
                     } catch (DevFailed devFailed) {
                         d.active = false;
@@ -353,6 +357,14 @@ public class LoggerDumper {
 
                 zipFile.flush();
                 zipFile.close();
+
+                for (Property p:propList) {
+                    String s  = p.read();
+                    if (s == null || "".equals(s)) continue;
+                    String n  = p.name;
+                    fmt = Constants.LOG_DELIMETER + n + Constants.PROP_VAL_DELIMETER + "%s";
+                    logFile.format(fmt, s);
+                }
 
                 fmt = Constants.LOG_DELIMETER + "File" + Constants.PROP_VAL_DELIMETER + "%s";
                 String zipFileName = zipFile.getName();
@@ -483,6 +495,32 @@ public class LoggerDumper {
             // Read output directory
             s = ini.get("Common", "outDir");
             if (s != null) outDir = s;
+
+            n = 0;
+            try {
+                n = ini.get("Common", "PropertyCount", int.class);
+            } catch (Exception ex) {
+            }
+            propList = new LinkedList();
+            if (n <= 0) return;
+            // Read Properties
+            for (int j = 0; j < n; j++) {
+                Property p = new Property();
+                String section = "Property_" + j;
+                s = ini.get(section, "device");
+                if (s != null) 
+                    p.device = s;
+                else
+                    continue;
+                p.attribute = ini.get(section, "attribute");
+                s = ini.get(section, "property");
+                if (s != null) 
+                    p.property = s;
+                else
+                    continue;
+                propList.add(p);
+                LOGGER.log(Level.FINE, "Added for processing " + p.property);
+            }
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Configuration read error");
             LOGGER.log(Level.INFO, "Exception info", ex);
@@ -559,5 +597,41 @@ public class LoggerDumper {
             active = false;
             timeout = System.currentTimeMillis();
         }
+    } 
+
+    class Property {
+        String device;
+        String attribute;
+        String property;
+        String name;
+
+        public Property() {
+        }
+
+        public Property(String dev, String attr, String prop) {
+            device = dev;
+            attribute = attr;
+            property = prop;
+        }
+        
+        public String read() {
+        if (device == null || "".equals(device)) return null;
+        if (property == null || "".equals(property)) return null;
+        try {
+            String s;
+            DeviceProxy devProxy = new DeviceProxy(device);
+            if (attribute == null || "".equals(attribute)) {
+                s = devProxy.get_property(property).extractString();
+                name = device + property;
+            } else {
+                DbAttribute dbAttr = devProxy.get_attribute_property(attribute);
+                s = dbAttr.get_string_value(property);
+                name = device + attribute + property;
+            }
+            return s;
+        } catch (DevFailed devFailed) {
+            return null;
+        }
+    }
     } 
 }
