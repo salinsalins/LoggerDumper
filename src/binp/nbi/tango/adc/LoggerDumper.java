@@ -310,6 +310,7 @@ public class LoggerDumper {
         }
         if (adc0 == null){
             System.out.printf("\nNo ADC found. Exit.");
+            printUsageMessage();
             return;
         }
         
@@ -385,9 +386,10 @@ public class LoggerDumper {
     
     void printUsageMessage() {
         String usageMessage = "Usage: \n"
-                + "LoggerDumper ini_file.ini or\n"
+                + "LoggerDumper ini_file.ini\n"
+                + "  Default ini_file: LoggerDumper.ini"
                 + "LoggerDumper host port device avgcount\n"
-                + "Default:  192.168.111.10 10000 binp/nbi/adc0 100";
+                + "  Default: 192.168.111.10 10000 binp/nbi/adc0 100";
         System.out.print(usageMessage);
     }
     
@@ -529,6 +531,7 @@ public class LoggerDumper {
             nbiLogger.process();
         }
         catch (Exception ex) {
+            nbiLogger.printUsageMessage();
             LOGGER.log(Level.SEVERE, "Exception in LoggerDumper");
             LOGGER.log(Level.INFO, "Exception info", ex);
         }
