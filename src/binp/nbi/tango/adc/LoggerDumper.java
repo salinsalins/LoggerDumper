@@ -161,10 +161,6 @@ public class LoggerDumper {
         zipFile.closeEntry();
     }
 
-    public void saveSignalData(ZipFormatter zipFile, Signal sig) throws IOException {
-        saveSignalData(zipFile, sig, "");
-    }
-
     public void saveSignalProp(ZipFormatter zipFile, Signal sig, String folder) throws IOException, DevFailed {
         zipFile.flush();
         String entryName = folder + Constants.PARAM + sig.name + Constants.EXTENSION;
@@ -174,9 +170,9 @@ public class LoggerDumper {
         zipFile.format("Shot%s%d\r\n", Constants.PROP_VAL_DELIMETER, sig.shot());
         String[] propList = sig.getPropValList();
         if (propList.length > 0) {
-            for (String propList1 : propList) {
-                // System.out.printf("%s\r\n", propList1);
-                zipFile.format("%s\r\n", propList1);
+            for (String prop : propList) {
+                // System.out.printf("%s\r\n", prop);
+                zipFile.format("%s\r\n", prop);
             }
         }
         zipFile.flush();
@@ -288,10 +284,6 @@ public class LoggerDumper {
                 }
             } // if
         } // for
-    }
-
-    public void dumpAdcDataAndLog(AdlinkADC adc, ZipFormatter zipFile, Formatter logFile) throws IOException, DevFailed {
-        dumpAdcDataAndLog(adc, zipFile, logFile, "");
     }
 
     public static void delay(int milliseconds) {
@@ -481,6 +473,7 @@ public class LoggerDumper {
                         i = ini.get(section, "avg", int.class);
                         adc.avg = i;
                     } catch (Exception ex) {
+                        adc.avg = 100;
                     }
                 deviceList.add(adc);
                 LOGGER.log(Level.FINE, "Added for processing " + adc.dev);
@@ -499,8 +492,8 @@ public class LoggerDumper {
 
         LoggerDumper nbiLogger;
         nbiLogger = new LoggerDumper();
-
         try {
+/*
             if (args.length > 0) {
                 nbiLogger.host = args[0];
             }
@@ -531,7 +524,8 @@ public class LoggerDumper {
             if (args.length > 0 && args.length < 6) {
                 nbiLogger.host2 = "";
             }
-
+*/
+            nbiLogger.readCommandLineParameters(args);
             nbiLogger.process();
         }
         catch (Exception ex) {
