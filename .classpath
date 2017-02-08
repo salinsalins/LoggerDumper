@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Util"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/tango-9.1.0"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/ini4j-0.5.4"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
