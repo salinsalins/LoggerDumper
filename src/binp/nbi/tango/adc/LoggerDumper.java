@@ -422,7 +422,6 @@ public class LoggerDumper {
             return;
         }
 
-        deviceList = new LinkedList();
         Device adc = new Device();
 
         adc.host = args[0];
@@ -432,15 +431,17 @@ public class LoggerDumper {
         if (args.length > 2) {
             adc.dev = args[2];
         }
-        try {
-            if (args.length > 3) {
+        if (args.length > 3) {
+            try {
                 adc.avg = Integer.parseInt(args[3]);
             }
-        }
-        catch (NumberFormatException ex) {
+            catch (NumberFormatException ex) {
+            }
         }
 
+        deviceList = new LinkedList();
         deviceList.add(adc);
+        LOGGER.log(Level.FINEST, "ADC {0} added", adc.dev);
         
         if (args.length > 4) {
             outDir = args[4];
@@ -454,15 +455,26 @@ public class LoggerDumper {
         try {
             String s;
             int i;
+
             Wini ini = new Wini(new File(iniFileName));
+
             // Restore log level
             s = ini.get("Log", "level");
-            if (s != null) LOGGER.setLevel(Level.parse(s));
+            if (s != null) {
+                LOGGER.setLevel(Level.parse(s));
+                LOGGER.log(Level.FINEST, "Log level {0} set", s);
+            }
+            else {
+                LOGGER.setLevel(Level.WARNING);
+                LOGGER.log(Level.FINEST, "Default log level WARNING set");
+            }
+
             // Number of ADCs
             int n = 0;
             try {
                 n = ini.get("Common", "ADCCount", int.class);
-            } catch (Exception ex) {
+            } 
+            catch (Exception ex) {
             }
             deviceList = new LinkedList();
             if (n <= 0) return;
@@ -490,7 +502,7 @@ public class LoggerDumper {
                         adc.avg = 100;
                     }
                 deviceList.add(adc);
-                LOGGER.log(Level.FINE, "Added for processing " + adc.dev);
+                LOGGER.log(Level.FINEST, "ADC {0} added", adc.dev);
             }
             // Read output directory
             s = ini.get("Common", "outDir");
@@ -499,7 +511,8 @@ public class LoggerDumper {
             n = 0;
             try {
                 n = ini.get("Common", "PropertyCount", int.class);
-            } catch (Exception ex) {
+            } 
+            catch (Exception ex) {
             }
             propList = new LinkedList();
             if (n <= 0) return;
@@ -519,57 +532,25 @@ public class LoggerDumper {
                 else
                     continue;
                 propList.add(p);
-                LOGGER.log(Level.FINE, "Added for processing " + p.property);
+                LOGGER.log(Level.FINEST, "Added for processing " + p.property);
             }
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Configuration read error");
+        } 
+        catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Configuration file read error");
             LOGGER.log(Level.INFO, "Exception info", ex);
         }
-        LOGGER.log(Level.FINE, "Configuration restored from {0}", iniFileName);
+        LOGGER.log(Level.FINEST, "Configuration restored from {0}", iniFileName);
     }
     
     public static void main(String[] args) {
 
-        LoggerDumper nbiLogger;
-        nbiLogger = new LoggerDumper();
+        LoggerDumper lgr = new LoggerDumper();
         try {
-/*
-            if (args.length > 0) {
-                nbiLogger.host = args[0];
-            }
-            if (args.length > 1) {
-                nbiLogger.port = args[1];
-            }
-            if (args.length > 2) {
-                nbiLogger.dev = args[2];
-            }
-            if (args.length > 3) {
-                nbiLogger.avgCount = Integer.parseInt(args[3]);
-            }
-            if (args.length > 4) {
-                nbiLogger.outDir = args[4];
-            }
-            if (!nbiLogger.outDir.endsWith("\\")) {
-                nbiLogger.outDir = nbiLogger.outDir + "\\";
-            }
-            if (args.length > 5) {
-                nbiLogger.host2 = args[5];
-            }
-            if (args.length > 6) {
-                nbiLogger.port2 = args[6];
-            }
-            if (args.length > 7) {
-                nbiLogger.dev2 = args[7];
-            }
-            if (args.length > 0 && args.length < 6) {
-                nbiLogger.host2 = "";
-            }
-*/
-            nbiLogger.readCommandLineParameters(args);
-            nbiLogger.process();
+            lgr.readCommandLineParameters(args);
+            lgr.process();
         }
         catch (Exception ex) {
-            nbiLogger.printUsageMessage();
+            lgr.printUsageMessage();
             LOGGER.log(Level.SEVERE, "Exception in LoggerDumper");
             LOGGER.log(Level.INFO, "Exception info", ex);
         }
