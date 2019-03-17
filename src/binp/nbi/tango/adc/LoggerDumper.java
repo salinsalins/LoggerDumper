@@ -1,5 +1,7 @@
 package binp.nbi.tango.adc;
 
+import binp.nbi.tango.adc.LoggerDumper.Device;
+import binp.nbi.tango.adc.LoggerDumper.Property;
 import binp.nbi.tango.util.Constants;
 import binp.nbi.tango.util.ZipFormatter;
 import java.io.File;
@@ -297,7 +299,7 @@ public class LoggerDumper {
         }
     }
 
-    public void process() throws DevFailed, IOException {
+    public void process() throws IOException {
         // Fill AdlinkADC in deviceList
         AdlinkADC adc0 = null;
         for (Device d:deviceList) {
@@ -328,8 +330,8 @@ public class LoggerDumper {
                 shotOld = shotNew;
 
                 String folder = makeFolder();
-                System.out.printf("\n%s New Shot %d\n", timeStamp(), shotNew);
                 lockDir(folder);
+                System.out.printf("\n%s New Shot %d\n", timeStamp(), shotNew);
                 Formatter logFile = openLogFile(folder);
                 String fmt = Constants.LOG_DELIMETER + "Shot" + Constants.PROP_VAL_DELIMETER + "%5d";
                 logFile.format(fmt, shotNew);
@@ -345,6 +347,7 @@ public class LoggerDumper {
                             d.timeout = System.currentTimeMillis();
                             d.active = true;
                             d.adc = adc;
+                            LOGGER.log(Level.INFO, "Activated {0}", d.adc.fullName());
                         }
                         System.out.println("Saving from " + d.adc.fullName());
                         dumpADCDataAndLog(d.adc, zipFile, logFile, d.folder);
@@ -352,6 +355,7 @@ public class LoggerDumper {
                     } catch (DevFailed devFailed) {
                         d.active = false;
                         d.timeout = System.currentTimeMillis() + 10000;
+                        LOGGER.log(Level.INFO, "Deactivated {0}", d.dev);
                     }
                 }
 
@@ -369,14 +373,12 @@ public class LoggerDumper {
                 fmt = Constants.LOG_DELIMETER + "File" + Constants.PROP_VAL_DELIMETER + "%s";
                 String zipFileName = zipFile.getName();
                 logFile.format(fmt, zipFileName);
-                //System.out.printf(fmt, fileName);
-                //System.out.println();
                 logFile.format(Constants.CRLF);
                 logFile.flush();
                 logFile.close();
                 unlockDir();
 
-                System.out.printf("\n%s Waiting for a shot ...", timeStamp());
+                System.out.printf("\n%s Waiting for next shot ...", timeStamp());
             } // if shotOld != shotNew
             delay(1000);
         } // while
@@ -422,6 +424,7 @@ public class LoggerDumper {
             return;
         }
 
+        deviceList = new LinkedList<Device>();
         Device adc = new Device();
 
         adc.host = args[0];
@@ -431,17 +434,15 @@ public class LoggerDumper {
         if (args.length > 2) {
             adc.dev = args[2];
         }
-        if (args.length > 3) {
-            try {
+        try {
+            if (args.length > 3) {
                 adc.avg = Integer.parseInt(args[3]);
             }
-            catch (NumberFormatException ex) {
-            }
+        }
+        catch (NumberFormatException ex) {
         }
 
-        deviceList = new LinkedList();
         deviceList.add(adc);
-        LOGGER.log(Level.FINEST, "ADC {0} added", adc.dev);
         
         if (args.length > 4) {
             outDir = args[4];
@@ -450,33 +451,22 @@ public class LoggerDumper {
             outDir = outDir + "\\";
         }
 }
-
+    
     private void readConfigFromIni() {
         try {
+            deviceList = new LinkedList<Device>();
             String s;
             int i;
-
             Wini ini = new Wini(new File(iniFileName));
-
             // Restore log level
             s = ini.get("Log", "level");
-            if (s != null) {
-                LOGGER.setLevel(Level.parse(s));
-                LOGGER.log(Level.FINEST, "Log level {0} set", s);
-            }
-            else {
-                LOGGER.setLevel(Level.WARNING);
-                LOGGER.log(Level.FINEST, "Default log level WARNING set");
-            }
-
+            if (s != null) LOGGER.setLevel(Level.parse(s));
             // Number of ADCs
             int n = 0;
             try {
                 n = ini.get("Common", "ADCCount", int.class);
-            } 
-            catch (Exception ex) {
+            } catch (Exception ex) {
             }
-            deviceList = new LinkedList();
             if (n <= 0) return;
             // Read ADCs
             for (int j = 0; j < n; j++) {
@@ -502,7 +492,7 @@ public class LoggerDumper {
                         adc.avg = 100;
                     }
                 deviceList.add(adc);
-                LOGGER.log(Level.FINEST, "ADC {0} added", adc.dev);
+                LOGGER.log(Level.FINE, "Added device " + adc.dev);
             }
             // Read output directory
             s = ini.get("Common", "outDir");
@@ -511,10 +501,9 @@ public class LoggerDumper {
             n = 0;
             try {
                 n = ini.get("Common", "PropertyCount", int.class);
-            } 
-            catch (Exception ex) {
+            } catch (Exception ex) {
             }
-            propList = new LinkedList();
+            propList = new LinkedList<Property>();
             if (n <= 0) return;
             // Read Properties
             for (int j = 0; j < n; j++) {
@@ -532,25 +521,57 @@ public class LoggerDumper {
                 else
                     continue;
                 propList.add(p);
-                LOGGER.log(Level.FINEST, "Added for processing " + p.property);
+                LOGGER.log(Level.FINE, "Added property {0}", p.property);
             }
-        } 
-        catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Configuration file read error");
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Configuration read error");
             LOGGER.log(Level.INFO, "Exception info", ex);
         }
-        LOGGER.log(Level.FINEST, "Configuration restored from {0}", iniFileName);
+        LOGGER.log(Level.FINE, "Configuration restored from {0}", iniFileName);
     }
     
     public static void main(String[] args) {
 
-        LoggerDumper lgr = new LoggerDumper();
+        LoggerDumper nbiLogger;
+        nbiLogger = new LoggerDumper();
         try {
-            lgr.readCommandLineParameters(args);
-            lgr.process();
+/*
+            if (args.length > 0) {
+                nbiLogger.host = args[0];
+            }
+            if (args.length > 1) {
+                nbiLogger.port = args[1];
+            }
+            if (args.length > 2) {
+                nbiLogger.dev = args[2];
+            }
+            if (args.length > 3) {
+                nbiLogger.avgCount = Integer.parseInt(args[3]);
+            }
+            if (args.length > 4) {
+                nbiLogger.outDir = args[4];
+            }
+            if (!nbiLogger.outDir.endsWith("\\")) {
+                nbiLogger.outDir = nbiLogger.outDir + "\\";
+            }
+            if (args.length > 5) {
+                nbiLogger.host2 = args[5];
+            }
+            if (args.length > 6) {
+                nbiLogger.port2 = args[6];
+            }
+            if (args.length > 7) {
+                nbiLogger.dev2 = args[7];
+            }
+            if (args.length > 0 && args.length < 6) {
+                nbiLogger.host2 = "";
+            }
+*/
+            nbiLogger.readCommandLineParameters(args);
+            nbiLogger.process();
         }
         catch (Exception ex) {
-            lgr.printUsageMessage();
+            nbiLogger.printUsageMessage();
             LOGGER.log(Level.SEVERE, "Exception in LoggerDumper");
             LOGGER.log(Level.INFO, "Exception info", ex);
         }
@@ -567,6 +588,7 @@ public class LoggerDumper {
         long timeout = 0;
 
         public Device() {
+            timeout = System.currentTimeMillis();
         }
 
         public Device(String _host, String _port, String _dev, String _folder, int _avg) {
