@@ -27,18 +27,18 @@ public class AdlinkADC {
         return devProxy.fullName();
     }
 
+    public void init() throws DevFailed {
+        devProxy = new DeviceProxy(dev, host, port);
+    }
+
     public String name() {
         return devProxy.name();
     }
 
-    long readShot() {
-        long newShot = -2;
-        try {
-            DeviceAttribute da = devProxy.read_attribute(Constants.SHOT_ID);
-            newShot = da.extractLong();
-        } catch (DevFailed e) {
-        }
-        return newShot;
+    long readShot() throws DevFailed {
+        DeviceAttribute da = devProxy.read_attribute(Constants.SHOT_ID);
+        long s = da.extractLong();
+        return s;
     }
 
     public String[] getPropList() throws DevFailed {
@@ -61,16 +61,16 @@ public class AdlinkADC {
     public String[] getChannelNames() throws DevFailed {
             AttributeInfo[] attrInfo = devProxy.get_attribute_info();
             int n = 0;
-            for (AttributeInfo attrInfo1 : attrInfo) {
-                if (attrInfo1.name.startsWith(Constants.CHAN)) {
+            for (AttributeInfo attr : attrInfo) {
+                if (attr.name.startsWith(Constants.CHAN)) {
                     n++;
                 }
             }
             String[] channelNames = new String[n];
             n = 0;
-            for (AttributeInfo attrInfo1 : attrInfo) {
-                if (attrInfo1.name.startsWith(Constants.CHAN)) {
-                    channelNames[n] = attrInfo1.name;
+            for (AttributeInfo attr : attrInfo) {
+                if (attr.name.startsWith(Constants.CHAN)) {
+                    channelNames[n] = attr.name;
                     n++;
                 }
             }
