@@ -310,12 +310,13 @@ public class LoggerDumper {
                 d.adc = adc;
                 if (adc0 == null) adc0 = adc;
             } catch (DevFailed ex) {
+                LOGGER.log(Level.INFO, "Device initialization error");
                 d.active = false;
                 d.timeout = System.currentTimeMillis() + 10000;
             }
         }
         if (adc0 == null){
-            System.out.printf("\nNo Adlink ADC found. Exit.");
+            LOGGER.log(Level.SEVERE, "No Adlink ADC found, exiting");
             printUsageMessage();
             return;
         }
@@ -399,11 +400,11 @@ public class LoggerDumper {
     }
     
     void printUsageMessage() {
-        String usageMessage = "Usage: \n"
-                + "LoggerDumper ini_file.ini\n"
-                + "  Default ini_file: LoggerDumper.ini"
-                + "LoggerDumper host port device avgcount\n"
-                + "  Default: 192.168.111.10 10000 binp/nbi/adc0 100";
+        String usageMessage = "\nUsage: \n"
+                + "LoggerDumper ini_file.ini "
+                + "(Default: LoggerDumper.ini)"
+                + "\nLoggerDumper host port device avgcount "
+                + "  (Default: 192.168.111.10 10000 binp/nbi/adc0 100)\n";
         System.out.print(usageMessage);
     }
     
@@ -414,10 +415,12 @@ public class LoggerDumper {
 
     void readCommandLineParameters(String[] args) {
         int length = args.length;
+
         if (length <= 0) {
             readConfigFromIni();
             return;
         }
+
         if (args[0].endsWith(".ini")) {
             iniFileName = args[0];
             readConfigFromIni();
@@ -458,16 +461,20 @@ public class LoggerDumper {
             String s;
             int i;
             Wini ini = new Wini(new File(iniFileName));
+
             // Restore log level
             s = ini.get("Log", "level");
-            if (s != null) LOGGER.setLevel(Level.parse(s));
+            if (s != null) {
+                LOGGER.setLevel(Level.parse(s));
+            }
+
             // Number of ADCs
             int n = 0;
-            try {
-                n = ini.get("Common", "ADCCount", int.class);
-            } catch (Exception ex) {
+            n = ini.get("Common", "ADCCount", int.class);
+            if (n <= 0) {
+                LOGGER.log(Level.WARNING, "No ADC declared in ini file");
+                return;
             }
-            if (n <= 0) return;
             // Read ADCs
             for (int j = 0; j < n; j++) {
                 Device adc = new Device();
@@ -483,48 +490,19 @@ public class LoggerDumper {
                     adc.folder = s;
                 else
                     adc.folder = section;
-                s = ini.get(section, "avg");
-                if (s != null) 
-                    try {
-                        i = ini.get(section, "avg", int.class);
-                        adc.avg = i;
-                    } catch (Exception ex) {
-                        adc.avg = 100;
-                    }
+                adc.avg = 100;
+                i = ini.get(section, "avg", int.class);
+                if (i != 0) 
+                    adc.avg = i;
                 deviceList.add(adc);
                 LOGGER.log(Level.FINE, "Added device " + adc.dev);
             }
             // Read output directory
             s = ini.get("Common", "outDir");
-            if (s != null) outDir = s;
-
-            n = 0;
-            try {
-                n = ini.get("Common", "PropertyCount", int.class);
-            } catch (Exception ex) {
-            }
-            propList = new LinkedList<Property>();
-            if (n <= 0) return;
-            // Read Properties
-            for (int j = 0; j < n; j++) {
-                Property p = new Property();
-                String section = "Property_" + j;
-                s = ini.get(section, "device");
-                if (s != null) 
-                    p.device = s;
-                else
-                    continue;
-                p.attribute = ini.get(section, "attribute");
-                s = ini.get(section, "property");
-                if (s != null) 
-                    p.property = s;
-                else
-                    continue;
-                propList.add(p);
-                LOGGER.log(Level.FINE, "Added property {0}", p.property);
-            }
+            if (s != null) 
+                outDir = s;
         } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Configuration read error");
+            LOGGER.log(Level.SEVERE, "Ini file not found");
             LOGGER.log(Level.INFO, "Exception info", ex);
         }
         LOGGER.log(Level.FINE, "Configuration restored from {0}", iniFileName);
@@ -532,46 +510,14 @@ public class LoggerDumper {
     
     public static void main(String[] args) {
 
-        LoggerDumper nbiLogger;
-        nbiLogger = new LoggerDumper();
+        LoggerDumper lgr;
+        lgr = new LoggerDumper();
         try {
-/*
-            if (args.length > 0) {
-                nbiLogger.host = args[0];
-            }
-            if (args.length > 1) {
-                nbiLogger.port = args[1];
-            }
-            if (args.length > 2) {
-                nbiLogger.dev = args[2];
-            }
-            if (args.length > 3) {
-                nbiLogger.avgCount = Integer.parseInt(args[3]);
-            }
-            if (args.length > 4) {
-                nbiLogger.outDir = args[4];
-            }
-            if (!nbiLogger.outDir.endsWith("\\")) {
-                nbiLogger.outDir = nbiLogger.outDir + "\\";
-            }
-            if (args.length > 5) {
-                nbiLogger.host2 = args[5];
-            }
-            if (args.length > 6) {
-                nbiLogger.port2 = args[6];
-            }
-            if (args.length > 7) {
-                nbiLogger.dev2 = args[7];
-            }
-            if (args.length > 0 && args.length < 6) {
-                nbiLogger.host2 = "";
-            }
-*/
-            nbiLogger.readCommandLineParameters(args);
-            nbiLogger.process();
+            lgr.readCommandLineParameters(args);
+            lgr.process();
         }
         catch (Exception ex) {
-            nbiLogger.printUsageMessage();
+            lgr.printUsageMessage();
             LOGGER.log(Level.SEVERE, "Exception in LoggerDumper");
             LOGGER.log(Level.INFO, "Exception info", ex);
         }
