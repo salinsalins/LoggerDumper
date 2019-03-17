@@ -63,7 +63,7 @@ public class Signal {
 		return y.shot();
 	}
 
-	long readShot() {
+	long readShot() throws DevFailed {
 		return y.readShot();
 	}
 
