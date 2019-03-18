@@ -294,7 +294,12 @@ public class LoggerDumper {
     public void process() throws IOException {
         Formatter logFile = null;
         ZipFormatter zipFile = null;
- 
+        
+        if (deviceList.isEmpty())  {
+            LOGGER.log(Level.SEVERE, "No ADC found.");
+            return;
+        }
+        
         // Fill AdlinkADC in deviceList
         int count = 0;
         for (Device d:deviceList) {
@@ -401,9 +406,7 @@ public class LoggerDumper {
 
     void readCommandLineParameters(String[] args) {
 
-        deviceList = new LinkedList<Device>();
-        Device d = new Device();
-        deviceList.add(d);
+        deviceList = new LinkedList<>();
 
         if (args.length <= 0) {
             readConfigFromIni();
@@ -416,6 +419,7 @@ public class LoggerDumper {
             return;
         }
 
+        Device d = new Device();
         try {
             d.adc.host = args[0];
             d.adc.port = args[1];
@@ -425,10 +429,12 @@ public class LoggerDumper {
         }
         catch (Exception ex) {
         }
-        
+
         if (!outDir.endsWith("\\")) {
             outDir = outDir + "\\";
         }
+        
+        deviceList.add(d);
 }
     
     private void readConfigFromIni() {
@@ -476,8 +482,8 @@ public class LoggerDumper {
             s = ini.get("Common", "outDir");
             if (s != null) 
                 outDir = s;
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Ini file not found");
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Ini file read error");
             LOGGER.log(Level.INFO, "Exception info", ex);
         }
         LOGGER.log(Level.FINE, "Configuration restored from {0}", iniFileName);
@@ -492,7 +498,7 @@ public class LoggerDumper {
             lgr.process();
         }
         catch (Exception ex) {
-            lgr.printUsageMessage();
+            //lgr.printUsageMessage();
             LOGGER.log(Level.SEVERE, "Exception in LoggerDumper");
             LOGGER.log(Level.INFO, "Exception info", ex);
         }
