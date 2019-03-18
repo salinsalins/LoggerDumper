@@ -1,7 +1,6 @@
 package binp.nbi.tango.adc;
 
 import binp.nbi.tango.util.Constants;
-import java.util.ArrayList;
 import java.util.List;
 
 import fr.esrf.Tango.DevFailed;
@@ -47,7 +46,7 @@ public class Channel {
         return shot;
     }
 
-    long readShot() {
+    long readShot() throws DevFailed {
         return adc.readShot();
     }
 
@@ -74,7 +73,7 @@ public class Channel {
         Double propVal = Double.NaN;
         try {
             propVal = Double.parseDouble(getProperty(propName));
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
         }
         return propVal;
     }
@@ -95,7 +94,7 @@ public class Channel {
         Integer propVal = Integer.MIN_VALUE;
         try {
             propVal = new Integer(getProperty(propName));
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
         }
         return propVal;
     }
