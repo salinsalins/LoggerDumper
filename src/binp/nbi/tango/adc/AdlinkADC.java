@@ -12,15 +12,18 @@ public class AdlinkADC {
     public String dev = Constants.DEFAULT_DEV;
     public DeviceProxy devProxy = null;
 
-    public AdlinkADC() throws DevFailed {
-        devProxy = new DeviceProxy(dev, host, port);
+    public AdlinkADC() {
+        host = Constants.DEFAULT_HOST;
+        port = Constants.DEFAULT_PORT;
+        dev = Constants.DEFAULT_DEV;
+        devProxy = null;
     }
 
-    public AdlinkADC(String adev, String ahost, String aport) throws DevFailed {
-        dev = adev;
-        host = ahost;
-        port = aport;
-        devProxy = new DeviceProxy(dev, host, port);
+    public AdlinkADC(String d, String h, String p) {
+        dev = d;
+        host = h;
+        port = p;
+        devProxy = null;
     }
 
     public String fullName() {
