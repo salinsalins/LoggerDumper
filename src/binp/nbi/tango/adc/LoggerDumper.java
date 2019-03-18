@@ -588,6 +588,13 @@ public class LoggerDumper {
         long timeout = 0;
 
         public Device() {
+            host = "192.168.111.10";
+            port = "10000";
+            dev = "binp/nbi/adc0";
+            folder = "";
+            avg = 100;
+            adc = null;
+            active = false;
             timeout = System.currentTimeMillis();
         }
 
@@ -598,6 +605,7 @@ public class LoggerDumper {
             folder = _folder;
             avg = _avg;
             active = false;
+            adc = null;
             timeout = System.currentTimeMillis();
         }
     } 
