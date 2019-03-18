@@ -291,91 +291,6 @@ public class LoggerDumper {
         }
     }
 
-    public void process() throws IOException {
-        Formatter logFile = null;
-        ZipFormatter zipFile = null;
-        
-        if (deviceList.isEmpty())  {
-            LOGGER.log(Level.SEVERE, "No ADC found.");
-            return;
-        }
-        
-        // Fill AdlinkADC in deviceList
-        int count = 0;
-        for (Device d:deviceList) {
-            try {
-                d.adc.init();
-                d.timeout = System.currentTimeMillis();
-                d.active = true;
-                count++;
-            } 
-            catch (DevFailed ex) {
-                LOGGER.log(Level.INFO, "Device {0} initialization error", d.adc.dev);
-                d.active = false;
-                d.timeout = System.currentTimeMillis() + 10000;
-            }
-        }
-        if (count == 0) {
-            LOGGER.log(Level.WARNING, "No active ADC found");
-        }
-        
-        long shotNew = 0;
-
-        while (true) {
-            try {
-                for (Device d:deviceList) {
-                    try {
-                        if (!d.active) {
-                            if (d.timeout > System.currentTimeMillis())
-                                continue;
-                            d.adc.init();
-                            d.timeout = System.currentTimeMillis();
-                            d.active = true;
-                            LOGGER.log(Level.CONFIG, "ADC {0} activated", d.adc.fullName());
-                        }
-
-                        shotNew = d.adc.readShot();
-                        if (shotNew == d.shot) 
-                            continue;
-                        d.shot = shotNew;
-                        System.out.printf("\n%s New Shot %d\n", timeStamp(), shotNew);
-
-                        if(!locked) {
-                            String folder = makeFolder();
-                            lockDir(folder);
-                            logFile = openLogFile(folder);
-                            String fmt = Constants.LOG_DELIMETER + "Shot" + Constants.PROP_VAL_DELIMETER + "%5d";
-                            logFile.format(fmt, shotNew);
-                            zipFile = openZipFile(folder);
-                        }
-                        System.out.println("Saving from " + d.adc.fullName());
-                        dumpADCDataAndLog(d.adc, zipFile, logFile, d.folder);
-                        zipFile.flush();
-                    } 
-                    catch (DevFailed df) {
-                        d.active = false;
-                        d.timeout = System.currentTimeMillis() + 10000;
-                        LOGGER.log(Level.CONFIG, "ADC {0} timeout for 10 seconds", d.adc.fullName());
-                    }
-                }
-                zipFile.flush();
-                zipFile.close();
-
-                String fmt = Constants.LOG_DELIMETER + "File" + Constants.PROP_VAL_DELIMETER + "%s";
-                String zipFileName = zipFile.getName();
-                logFile.format(fmt, zipFileName);
-                logFile.format(Constants.CRLF);
-                logFile.flush();
-                logFile.close();
-                unlockDir();
-            }
-            catch (Exception ex) {
-            }
-            System.out.printf("\n%s Waiting for next shot ...", timeStamp());
-            delay(1000);
-        } // while
-    }
-
     private void lockDir(String folder) throws FileNotFoundException {
         lockFile = new File(folder + "\\lock.lock");
         lockFileOS = new FileOutputStream(lockFile);
@@ -419,11 +334,12 @@ public class LoggerDumper {
             return;
         }
 
-        Device d = new Device();
+        Device d = null;
+        d = new Device();
         try {
-            d.adc.host = args[0];
-            d.adc.port = args[1];
-            d.adc.dev = args[2];
+            d.host = args[0];
+            d.port = args[1];
+            d.dev = args[2];
             d.avg = Integer.parseInt(args[3]);
             outDir = args[4];
         }
@@ -435,6 +351,7 @@ public class LoggerDumper {
         }
         
         deviceList.add(d);
+        LOGGER.log(Level.FINE, "Added device " + d.dev);
 }
     
     private void readConfigFromIni() {
@@ -461,11 +378,11 @@ public class LoggerDumper {
                 Device d = new Device();
                 String section = "ADC_" + j;
                 s = ini.get(section, "host");
-                if (s != null) d.adc.host = s;
+                if (s != null) d.host = s;
                 s = ini.get(section, "port");
-                if (s != null) d.adc.port = s;
+                if (s != null) d.port = s;
                 s = ini.get(section, "device");
-                if (s != null) d.adc.dev = s;
+                if (s != null) d.dev = s;
                 s = ini.get(section, "folder");
                 if (s != null) 
                     d.folder = s;
@@ -476,7 +393,7 @@ public class LoggerDumper {
                 if (i != 0) 
                     d.avg = i;
                 deviceList.add(d);
-                LOGGER.log(Level.FINE, "Added device " + d.adc.dev);
+                LOGGER.log(Level.FINE, "Added device " + d.dev);
             }
             // Read output directory
             s = ini.get("Common", "outDir");
@@ -489,6 +406,95 @@ public class LoggerDumper {
         LOGGER.log(Level.FINE, "Configuration restored from {0}", iniFileName);
     }
     
+    public void process() throws IOException {
+        Formatter logFile = null;
+        ZipFormatter zipFile = null;
+        
+        if (deviceList.isEmpty())  {
+            LOGGER.log(Level.SEVERE, "No ADC found.");
+            return;
+        }
+        
+        // Fill AdlinkADC in deviceList
+        int count = 0;
+        for (Device d:deviceList) {
+            try {
+                d.init();
+                d.timeout = System.currentTimeMillis();
+                d.active = true;
+                count++;
+            } 
+            catch (DevFailed ex) {
+                LOGGER.log(Level.INFO, "ADC {0} initialization error", d.fullName());
+                d.active = false;
+                d.timeout = System.currentTimeMillis() + 10000;
+            }
+        }
+        if (count == 0) {
+            LOGGER.log(Level.WARNING, "No active ADC found");
+        }
+        
+        long shotNew = 0;
+
+        while (true) {
+            try {
+                for (Device d:deviceList) {
+                    try {
+                        if (!d.active) {
+                            if (d.timeout > System.currentTimeMillis())
+                                continue;
+                            d.init();
+                            d.timeout = System.currentTimeMillis();
+                            d.active = true;
+                            LOGGER.log(Level.FINE, "ADC {0} activated", d.fullName());
+                        }
+                        shotNew = d.readShot();
+                        if (shotNew <= d.shot) 
+                            if(!locked) 
+                                break;
+                            else
+                                continue;
+                        d.shot = shotNew;
+                        System.out.printf("\n%s New Shot %d\n", timeStamp(), shotNew);
+
+                        if(!locked) {
+                            String folder = makeFolder();
+                            lockDir(folder);
+                            logFile = openLogFile(folder);
+                            String fmt = Constants.LOG_DELIMETER + "Shot" + Constants.PROP_VAL_DELIMETER + "%5d";
+                            logFile.format(fmt, shotNew);
+                            zipFile = openZipFile(folder);
+                        }
+                        System.out.println("Saving from " + d.fullName());
+                        dumpADCDataAndLog(d, zipFile, logFile, d.folder);
+                        zipFile.flush();
+                    } 
+                    catch (DevFailed df) {
+                        d.active = false;
+                        d.timeout = System.currentTimeMillis() + 10000;
+                        LOGGER.log(Level.CONFIG, "ADC {0} timeout for 10 seconds", d.fullName());
+                    }
+                }
+                if(locked) {
+                    zipFile.flush();
+                    zipFile.close();
+
+                    String fmt = Constants.LOG_DELIMETER + "File" + Constants.PROP_VAL_DELIMETER + "%s";
+                    String zipFileName = zipFile.getName();
+                    logFile.format(fmt, zipFileName);
+                    logFile.format(Constants.CRLF);
+                    logFile.flush();
+                    logFile.close();
+                    unlockDir();
+                }
+            }
+            catch (Exception ex) {
+            }
+            System.out.printf("\n%s Waiting for next shot ...", timeStamp());
+            delay(1000);
+        } // while
+    }
+
     public static void main(String[] args) {
 
         LoggerDumper lgr;
@@ -504,8 +510,7 @@ public class LoggerDumper {
         }
     }
 
-    class Device {
-        AdlinkADC adc;
+    class Device extends AdlinkADC {
         String folder = "";
         int avg = 100;
         boolean active = false;
@@ -513,17 +518,20 @@ public class LoggerDumper {
         long shot = -8888L;
 
         public Device() {
-            timeout = System.currentTimeMillis();
+            this.folder = "";
+            this.avg = 100;
+            this.active = false;
+            this.shot = -8888L;
+            this.timeout = System.currentTimeMillis();
         }
 
-        public Device(String ahost, String aport, String adev, String afolder, int aavg) {
-            adc.host = ahost;
-            adc.port = aport;
-            adc.dev = adev;
-            folder = afolder;
-            avg = aavg;
-            active = false;
-            timeout = System.currentTimeMillis();
+        public Device(String h, String p, String d, String f, int a) {
+            super(h, p, d);
+            this.folder = f;
+            this.avg = a;
+            this.active = false;
+            this.shot = -8888L;
+            this.timeout = System.currentTimeMillis();
         }
     } 
 
