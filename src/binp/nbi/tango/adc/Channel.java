@@ -37,11 +37,6 @@ public class Channel {
         return ai.label;
     }
 
-    public String description() throws DevFailed {
-        AttributeInfo ai = adc.devProxy.get_attribute_info(name());
-        return ai.description;
-    }
-
     long shot() {
         return shot;
     }
@@ -63,10 +58,6 @@ public class Channel {
 
     public String getProperty(String propertyName) {
         return dbAttr.get_string_value(propertyName);
-    }
-
-    public String getPropertyAsString(String propertyName) {
-        return getProperty(propertyName);
     }
 
     public Double getPropertyAsDouble(String propName) {

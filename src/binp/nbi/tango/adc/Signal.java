@@ -71,10 +71,6 @@ public class Signal {
 		return y.label();
 	}
 
-	String description() throws DevFailed {
-		return y.description();
-	}
-
 	public void readData() throws DevFailed {
 		y.readData();
 		x.readData();
