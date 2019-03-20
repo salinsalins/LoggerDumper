@@ -337,6 +337,7 @@ public class LoggerDumper {
         Device d = null;
         d = new Device();
         try {
+            d.folder = "ADC_0";
             d.host = args[0];
             d.port = args[1];
             d.dev = args[2];
