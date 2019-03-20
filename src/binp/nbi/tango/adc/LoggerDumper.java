@@ -426,7 +426,7 @@ public class LoggerDumper {
                 count++;
             } 
             catch (DevFailed ex) {
-                LOGGER.log(Level.INFO, "ADC {0} initialization error", d.fullName());
+                LOGGER.log(Level.INFO, "ADC {0} initialization error", d.dev);
                 d.active = false;
                 d.timeout = System.currentTimeMillis() + 10000;
             }
@@ -496,21 +496,6 @@ public class LoggerDumper {
         } // while
     }
 
-    public static void main(String[] args) {
-
-        LoggerDumper lgr;
-        lgr = new LoggerDumper();
-        try {
-            lgr.readCommandLineParameters(args);
-            lgr.process();
-        }
-        catch (Exception ex) {
-            //lgr.printUsageMessage();
-            LOGGER.log(Level.SEVERE, "Exception in LoggerDumper");
-            LOGGER.log(Level.INFO, "Exception info", ex);
-        }
-    }
-
     class Device extends AdlinkADC {
         String folder = "";
         int avg = 100;
@@ -573,4 +558,19 @@ public class LoggerDumper {
             }
         }
     } 
+
+    public static void main(String[] args) {
+
+        LoggerDumper lgr;
+        lgr = new LoggerDumper();
+        try {
+            lgr.readCommandLineParameters(args);
+            lgr.process();
+        }
+        catch (Exception ex) {
+            //lgr.printUsageMessage();
+            LOGGER.log(Level.SEVERE, "Exception in LoggerDumper");
+            LOGGER.log(Level.INFO, "Exception info", ex);
+        }
+    }
 }
