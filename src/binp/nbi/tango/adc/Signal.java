@@ -63,10 +63,6 @@ public class Signal {
 		return y.shot();
 	}
 
-	long readShot() throws DevFailed {
-		return y.readShot();
-	}
-
 	String label() throws DevFailed {
 		return y.label();
 	}

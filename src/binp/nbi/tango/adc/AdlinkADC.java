@@ -39,20 +39,9 @@ public class AdlinkADC {
         devProxy = new DeviceProxy(dev, host, port);
     }
 
-    public String getName() {
-        if (devProxy == null)
-            return "Not_initialized";
-        return devProxy.name();
-    }
-
     long readShot() throws DevFailed {
         DeviceAttribute da = devProxy.read_attribute(Constants.SHOT_ID);
         long s = da.extractLong();
         return s;
-    }
-
-    public AttributeInfo[] getChannels() throws DevFailed {
-            AttributeInfo[] attrInfo = devProxy.get_attribute_info();
-            return attrInfo;
     }
 }

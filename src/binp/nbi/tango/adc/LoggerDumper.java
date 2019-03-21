@@ -236,12 +236,12 @@ public class LoggerDumper {
 
     public void dumpADCDataAndLog(AdlinkADC adc, ZipFormatter zipFile, Formatter logFile, String folder)
             throws IOException, DevFailed {
-        AttributeInfo[] channels = adc.getChannels();
+    	AttributeInfo[] atts = adc.devProxy.get_attribute_info();
         int retryCount = 0;
-        for (int i = 0; i < channels.length; i++) {
-            if (channels[i].name.startsWith(Constants.CHAN + "y")) {
+        for (int i = 0; i < atts.length; i++) {
+            if (atts[i].name.startsWith("chany")) {
                 try {
-                    Channel chan = new Channel(adc, channels[i].name);
+                    Channel chan = new Channel(adc, atts[i].name);
                     Boolean saveDataFlag = chan.getPropertyAsBoolean(Constants.SAVE_DATA);
                     Boolean saveLogFlag = chan.getPropertyAsBoolean(Constants.SAVE_LOG);
                     if (saveDataFlag || saveLogFlag) {
@@ -266,11 +266,11 @@ public class LoggerDumper {
                     retryCount++;
                 } // catch
                 if (retryCount > 0 && retryCount < 3) {
-                    System.out.println("Retry reading channel " + channels[i].name);
+                    System.out.println("Retry reading channel " + atts[i].name);
                     i--;
                 }
                 if (retryCount >= 3) {
-                    System.out.println("Error reading channel " + channels[i].name);
+                    System.out.println("Error reading channel " + atts[i].name);
                 }
             } // if
         } // for
@@ -504,7 +504,6 @@ public class LoggerDumper {
             this.timeout = System.currentTimeMillis();
         }
         
-        @Override
         public String getName() {
             return host + ":" + port + "/" + dev; 
         }

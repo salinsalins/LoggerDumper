@@ -90,15 +90,6 @@ public class Channel {
         return propVal;
     }
 
-    public List<String> getPropertyNameList() {
-        List<String> propList = Arrays.asList(dbAttr.get_property_list());
-        return propList;
-    }
-
-    public String[] getPropertyNames() {
-        return dbAttr.get_property_list();
-    }
-
     public String[] getPropValList() {
         String[] propNames = dbAttr.get_property_list();
         if (propNames != null && propNames.length > 0) {
