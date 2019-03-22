@@ -101,6 +101,7 @@ public class LoggerDumper {
         double ys = 0.0;
         double ns = 0.0;
         String fmt = Constants.XY_FORMAT;
+        String s;
 
         zipFile.flush();
 
@@ -118,8 +119,7 @@ public class LoggerDumper {
             avgc = 1;
         }
 
-        // System.out.printf("y: %d x: %d avgc: %d\r\n", y.length, x.length,
-        // avgc);
+        // System.out.printf("y: %d x: %d avgc: %d\r\n", y.length, x.length, avgc);
         for (int i = 0; i < y.length; i++) {
             xs += x[i];
             ys += y[i];
@@ -128,14 +128,16 @@ public class LoggerDumper {
                 if (i >= avgc) {
                     zipFile.format(Constants.CRLF);
                 }
-                zipFile.format(fmt, xs / ns, ys / ns);
+                s = String.format(fmt, xs / ns, ys / ns);
+                zipFile.format(s.replace(",", "."));
                 xs = 0.0;
                 ys = 0.0;
                 ns = 0.0;
             }
         }
         if (ns > 0) {
-            zipFile.format(Constants.CRLF + fmt, xs / ns, ys / ns);
+            s = String.format(Constants.CRLF + fmt, xs / ns, ys / ns);
+            zipFile.format(s.replace(",", "."));
             xs = 0.0;
             ys = 0.0;
             ns = 0.0;
@@ -469,15 +471,15 @@ public class LoggerDumper {
                     logFile.flush();
                     logFile.close();
                     unlockDir();
+                    System.out.printf("\n%s Waiting for next shot ...", timeStamp());
                 }
             }
             catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, "Unexpected exception");
                 return;
             }
-            System.out.printf("\n%s Waiting for next shot ...", timeStamp());
             delay(1000);
-        } // while
+        }// while
     }
 
     class Device extends AdlinkADC {
