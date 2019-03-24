@@ -12,16 +12,30 @@ import java.util.*;
 
 import fr.esrf.Tango.*;
 import fr.esrf.TangoApi.AttributeInfo;
+
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ini4j.Wini;
 
 public class LoggerDumper {
-    static final Logger LOGGER = Logger.getLogger(LoggerDumper.class.getPackage().getName());
+	// configure logging
+	static {
+    	System.setProperty("java.util.logging.SimpleFormatter.format",
+                "[%1$tF %1$tT] %4$-7s %2$s %5$s %6$s %n");
+    }
+    private static final Logger LOGGER = Logger.getLogger(LoggerDumper.class.getName());
+	private static final ConsoleHandler handler = new ConsoleHandler();
+	static {
+    	LOGGER.addHandler(handler);
+    	LOGGER.setUseParentHandlers(false);
+    	LOGGER.setLevel(Level.ALL);
+    	handler.setLevel(Level.ALL);
+    }
 
     static String progName = "Adlink DAQ-2204 Tango Logger";
     static String progNameShort = "LoggerDumper";
-    static String progVersion = "10.0"; 
+    static String progVersion = "10.1"; 
     public String iniFileName = progNameShort + ".ini";
 
     public String outRootDir = ".\\data\\";
