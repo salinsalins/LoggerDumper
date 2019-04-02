@@ -13,35 +13,35 @@ public class AdlinkADC {
     public String port = Constants.DEFAULT_PORT;
     public String dev = Constants.DEFAULT_DEV;
     public DeviceProxy devProxy = null;
+    long shot;
 
     public AdlinkADC() {
         host = Constants.DEFAULT_HOST;
         port = Constants.DEFAULT_PORT;
         dev = Constants.DEFAULT_DEV;
         devProxy = null;
-    }
+        shot = 0;
+   }
 
     public AdlinkADC(String d, String h, String p) {
         dev = d;
         host = h;
         port = p;
         devProxy = null;
+        shot = 0;
     }
 
     public String fullName() {
         if (devProxy == null)
             return "Not_initialized";
         else
-            return devProxy.fullName();
+            return "ADC";
     }
 
-    public void init() throws DevFailed {
-        devProxy = new DeviceProxy(dev, host, port);
+    public void init() {
     }
 
-    long readShot() throws DevFailed {
-        DeviceAttribute da = devProxy.read_attribute(Constants.SHOT_ID);
-        long s = da.extractLong();
-        return s;
+    long readShot() {
+        return ++shot;
     }
 }

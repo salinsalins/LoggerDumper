@@ -172,7 +172,7 @@ public class LoggerDumper {
         zipFile.closeEntry();
     }
 
-    public void saveSignalProp(ZipFormatter zipFile, Signal sig, String folder) throws IOException, DevFailed {
+    public void saveSignalProp(ZipFormatter zipFile, Signal sig, String folder) throws IOException {
         zipFile.flush();
         String entryName = folder + Constants.PARAM + sig.name + Constants.EXTENSION;
         zipFile.putNextEntry(entryName);
@@ -251,44 +251,12 @@ public class LoggerDumper {
     }
 
     public void dumpADCDataAndLog(AdlinkADC adc, ZipFormatter zipFile, Formatter logFile, String folder)
-            throws IOException, DevFailed {
-    	AttributeInfo[] atts = adc.devProxy.get_attribute_info();
-        int retryCount = 0;
+    {
+    	String[] atts = {"chany1", "chany2", "chany3"};
         for (int i = 0; i < atts.length; i++) {
-            if (atts[i].name.startsWith("chany")) {
-                try {
-                    Channel chan = new Channel(adc, atts[i].name);
-                    Boolean saveDataFlag = chan.getPropertyAsBoolean(Constants.SAVE_DATA);
-                    Boolean saveLogFlag = chan.getPropertyAsBoolean(Constants.SAVE_LOG);
-                    if (saveDataFlag || saveLogFlag) {
-                        Signal sig = new Signal(chan);
-                        saveSignalProp(zipFile, sig, folder);
-                        if (saveDataFlag) {
-                            sig.readData();
-                            saveSignalData(zipFile, sig, folder);
-                        }
-                        if (saveLogFlag) {
-                            saveSignalLog(logFile, sig);
-                        }
-                    } // if save_auto || save_log is on
-                    retryCount = 0;
-                } // try
-                catch (Exception ex) {
-                    //System.out.println("Channel saving exception : " + ex );
-                    //e.printStackTrace();
-                    logFile.flush();
-                    zipFile.flush();
-                    zipFile.closeEntry();
-                    retryCount++;
-                } // catch
-                if (retryCount > 0 && retryCount < 3) {
-                    System.out.println("Retry reading channel " + atts[i].name);
-                    i--;
-                }
-                if (retryCount >= 3) {
-                    System.out.println("Error reading channel " + atts[i].name);
-                }
-            } // if
+            saveSignalProp(zipFile, null, folder);
+            saveSignalData(zipFile, null, folder);
+            saveSignalLog(logFile, null);
         } // for
     }
 
